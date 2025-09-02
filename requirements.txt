@@ -1,0 +1,9 @@
+streamlit
+pandas
+praw
+# Versões fixas para garantir a compatibilidade do tokenizer já que deu problem\
+transformers==4.38.2
+tokenizers==0.15.2
+sentencepiece==0.1.99
+torch
+python-dotenv
