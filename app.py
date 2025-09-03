@@ -21,14 +21,13 @@ QUERIES = [
     "Alexandre de Moraes",
     "Julgamento do Golpe",
     "STF",
-    "Julgamento da cúpula militar",
     "Julgamento do 8 de janeiro"]
 # Usa o cache do Streamlit para carregar o modelo de IA só uma vez
 @st.cache_resource
 def load_model():
     """Carrega o modelo de análise de sentimento da Hugging Face."""
-    model_name = "cardiffnlp/twitter-xlm-roberta-base-sentiment"
-    return pipeline("sentiment-analysis", model=model_name)
+    model_name = "tabularisai/multilingual-sentiment-analysis"
+    return pipeline("text-classification", model=model_name)
 
 sentiment_analyzer = load_model()
 
@@ -76,10 +75,10 @@ def analyze_sentiment(df):
     if df is None:
         return None
     
-    # O pipeline processa a lista de textos de uma vez 
+    # O pipeline processa a lista de textos 
     results = sentiment_analyzer(df["text"].tolist())
     
-    # Os rótulos do modelo são 'Positive', 'Negative', 'Neutral'.
+    # rótulos do modelo s
     df['sentimento'] = [result['label'] for result in results]
     df['confianca'] = [round(result['score'], 2) for result in results]
     
@@ -99,7 +98,7 @@ if st.button(f"Analisar Sentimento para '{selected_query}'"):
         # 1. Busca os dados do Reddit
         reddit_df = get_reddit_posts(selected_query)
 
-        # 2. Analisa o sentimento se os dados foram encontrados
+        # 2. Analisa o sentimento se  dados  encontrados
         if reddit_df is not None:
             results_df = analyze_sentiment(reddit_df)
             
