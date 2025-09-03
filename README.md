@@ -77,4 +77,5 @@ Construa a imagem Docker:
 
    		docker run -p 8501:8501 -e REDDIT_CLIENT_ID="SEU_NOVO_CLIENT_ID" -e REDDIT_CLIENT_SECRET="SEU_NOVO_CLIENT_SECRET" -e REDDIT_USER_AGENT="script:nome-do-novo-app:v1 (by /u/seu_username)" analise-julgamento
 
- Ps:  por motivos de R$ não quero disponibilizar a imagem do container em algum serviço de nuvem, porém esse tutorial é bom o bastante para você rodar sua própria aplicação num container local. Caso só queira ver a aplicação rodando numa URL pública que não incorre em nenhum gasto para o autor, veja o file streamlit aplicativo
+ Ps:  por motivos de R$ não quero disponibilizar a imagem do container em algum serviço de nuvem, porém esse tutorial é bom o bastante para você rodar sua própria aplicação num container local. Caso você queira ver a aplicação rodando numa URL pública que não incorre em nenhum gasto para o autor, veja o file streamlit aplicativo
+
