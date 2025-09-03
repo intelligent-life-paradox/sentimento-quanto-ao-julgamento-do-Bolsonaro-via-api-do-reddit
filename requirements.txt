@@ -1,0 +1,9 @@
+streamlit
+pandas
+praw
+transformers
+tokenizers
+sentencepiece
+python-dotenv
+# Pede a versão 2.5.0 do PyTorch, que é compatível com o ambiente do Streamlit Cloud
+torch==2.5.0 --extra-index-url https://download.pytorch.org/whl/cpu
