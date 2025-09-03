@@ -1,6 +1,6 @@
 📊 **Análise de Sentimento: Reações ao Julgamento de Bolsonaro no Reddit**
 Este projeto é uma aplicação web containerizada que realiza análise de sentimento em tempo real sobre discussões no subreddit r/brasil a respeito do julgamento do ex-presidente Jair Bolsonaro e da cúpula militar, com foco nos eventos ocorridos em 2 de setembro de 2025.
-A aplicação permite que o usuário selecione um tópico de busca relacionado ao julgamento e visualiza a distribuição de sentimentos (Positivo, Negativo, Neutro) dos posts e comentários mais recentes.
+A aplicação permite que o usuário selecione um tópico de busca relacionado ao julgamento e visualiza a distribuição de sentimentos (Positivo,muito positivo, Negativo, muito negativo, Neutro) dos posts e comentários mais recentes. O modelo tabularisai/multilingual-sentiment-analysis não necessariamente serve para medir associação política do autor de algum comentário, pense nele mais como uma métrica do sentimento que o autor passa ao escrever algo. 
 
 
 
@@ -76,3 +76,5 @@ Construa a imagem Docker:
 5. Se por algum motivo esse caminho de execução não funcionar, passe seus suas credenciais via bash(powershell) na hora de rodar o container da seguinte maneira:
 
    		docker run -p 8501:8501 -e REDDIT_CLIENT_ID="SEU_NOVO_CLIENT_ID" -e REDDIT_CLIENT_SECRET="SEU_NOVO_CLIENT_SECRET" -e REDDIT_USER_AGENT="script:nome-do-novo-app:v1 (by /u/seu_username)" analise-julgamento
+
+ Ps:  por motivos de R$ não quero disponibilizar a imagem do container em algum serviço de nuvem, porém esse tutorial é bom o bastante para você rodar sua própria aplicação num container local. Caso só queira ver a aplicação rodando numa URL pública que não incorre em nenhum gasto para o autor, veja o file streamlit aplicativo
