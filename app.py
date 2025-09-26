@@ -21,8 +21,6 @@ QUERIES = [
     "Julgamento do Bolsonaro",
     "Alexandre de Moraes",
     'política brasileira',
-    'pec da anistia',
-    'pec da bandidagem',
     'Manifestações', 
     'Donald Trump',
     'Eduardo Bolsonaro',
