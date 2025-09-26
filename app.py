@@ -77,7 +77,7 @@ def get_reddit_posts(query, subreddit_name="brasil", limit=100):
                     continue
                 
                 # Ignora comentários que têm https em alguma parte do texto
-                if 'http' or '[removed]' not in comment.body.strip().lower():
+                if 'http' or '[removed]' or 'https' not in comment.body.strip().lower():
                     content_list.append({
                         "text": comment.body,
                         "created_utc": comment.created_utc
