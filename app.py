@@ -4,6 +4,7 @@ import praw
 from transformers import pipeline
 from dotenv import load_dotenv
 import os
+from datetime import datetime, timedelta
 
 # --- Configuração e odelo ---
 
@@ -13,16 +14,22 @@ REDDIT_CLIENT_ID = os.getenv("REDDIT_CLIENT_ID")
 REDDIT_CLIENT_SECRET = os.getenv("REDDIT_CLIENT_SECRET")
 REDDIT_USER_AGENT = os.getenv("REDDIT_USER_AGENT")
 
-# queries 
+# queries
 QUERIES = [
     "Bolsonaro preso",
     "Bolsonaro inocente",
     "Julgamento do Bolsonaro",
     "Alexandre de Moraes",
-    "Julgamento do Golpe",
+    'política brasileira',
+    'pec da anistia',
+    'pec da bandidagem',
+    'Manifestações', 
+    'Donald Trump',
+    'Eduardo Bolsonaro',
     "STF",
     "Julgamento do 8 de janeiro"]
 # Usa o cache do Streamlit para carregar o modelo de IA só uma vez
+
 @st.cache_resource
 def load_model():
     """Carrega o modelo de análise de sentimento da Hugging Face."""
@@ -33,35 +40,53 @@ sentiment_analyzer = load_model()
 
 # --- Lógica ---
 
-def get_reddit_posts(query, subreddit_name="brasil", limit=15):
+def get_reddit_posts(query, subreddit_name="brasil", limit=100):
     """Busca posts e comentários no Reddit usando a biblioteca PRAW."""
     if not all([REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, REDDIT_USER_AGENT]):
         st.error("Credenciais do Reddit não encontradas! Verifique seu arquivo .env.")
         return None
-    
+
     try:
         reddit = praw.Reddit(
             client_id=REDDIT_CLIENT_ID,
             client_secret=REDDIT_CLIENT_SECRET,
             user_agent=REDDIT_USER_AGENT,
         )
-        
+
         subreddit = reddit.subreddit(subreddit_name)
         # Busca por posts (submissions) que contenham a query no título ou no corpo
-        submissions = subreddit.search(query, limit=limit)
-        
+        submissions = subreddit.search(query, limit=limit, sort="new")
+
         content_list = []
+        one_week_ago = datetime.utcnow() - timedelta(days=7)
+
         for post in submissions:
-           
-            content_list.append({"text": post.title})
+            post_time = datetime.utcfromtimestamp(post.created_utc)
+            if post_time < one_week_ago:
+                continue
+
+            content_list.append({
+                "text": post.title,
+                "created_utc": post.created_utc
+            })
             # Evita carregar muita coisa, carrega apenas os comentários mais votados
             post.comments.replace_more(limit=0)
             # Pega os 10 comentários mais relevantes ( os mais votados)
+
             for comment in post.comments.list()[:10]:
-                content_list.append({"text": comment.body})
+                comment_time = datetime.utcfromtimestamp(comment.created_utc)
+                if comment_time < one_week_ago:
+                    continue
+                
+                # Ignora comentários que são apenas links
+                if not comment.body.strip().lower().startswith("http"):
+                    content_list.append({
+                        "text": comment.body,
+                        "created_utc": comment.created_utc
+                    })
 
         if not content_list:
-            st.warning("Nenhum post ou comentário encontrado para sua busca.")
+            st.warning("Nenhum post ou comentário encontrado na última semana para sua busca.")
             return None
 
         return pd.DataFrame(content_list)
@@ -74,20 +99,20 @@ def analyze_sentiment(df):
     """Aplica o modelo de análise de sentimento em cada texto do DataFrame."""
     if df is None:
         return None
-    
-    # O pipeline processa a lista de textos 
+
+    # O pipeline processa a lista de textos
     results = sentiment_analyzer(df["text"].tolist())
-    
+
     # rótulos do modelo s
     df['sentimento'] = [result['label'] for result in results]
     df['confianca'] = [round(result['score'], 2) for result in results]
-    
+
     return df
 
 # --- Interface Gráfica com Streamlit ---
 
 st.set_page_config(page_title="Análise de Sentimento do Reddit", layout="wide")
-st.title("Análise de Sentimento sobre o Julgamento da cúpula militar e Bolsonaro no Reddit")
+st.title("Análise de Sentimento sobre a política Brasileira no Reddit")
 st.markdown("Selecione um termo de busca para analisar o sentimento de posts e comentários recentes no subreddit `r/brasil`.")
 
 # Cria um menu dropdown com as queries pré-definidas
@@ -99,20 +124,30 @@ if st.button(f"Analisar Sentimento para '{selected_query}'"):
         reddit_df = get_reddit_posts(selected_query)
 
         # 2. Analisa o sentimento se  dados  encontrados
-        if reddit_df is not None:
+        if reddit_df is not None and not reddit_df.empty:
             results_df = analyze_sentiment(reddit_df)
-            
+
             st.success(f"Análise concluída! {len(results_df)} itens (títulos e comentários) analisados.")
             
+            results_df['data'] = pd.to_datetime(results_df['created_utc'], unit='s').dt.date
+            
+            sentiment_over_time = results_df.groupby(['data', 'sentimento']).size().unstack(fill_value=0)
+            
+            st.subheader("Evolução do Sentimento na Última Semana")
+            st.markdown("O gráfico mostra a contagem diária de comentários/títulos para cada categoria de sentimento.")
+            st.line_chart(sentiment_over_time)
+            
+            st.divider()
+
             # 3. resultados
             col1, col2 = st.columns(2)
-            
+
             with col1:
-                st.subheader("Distribuição de Sentimentos")
+                st.subheader("Distribuição Geral de Sentimentos")
                 sentiment_counts = results_df['sentimento'].value_counts()
                 st.bar_chart(sentiment_counts)
-            
+
             with col2:
                 st.subheader("Amostra dos Dados")
                 # Mostra o texto, sentimento e a confiança do modelo
-                st.dataframe(results_df[['text', 'sentimento', 'confianca']], height=300)
+                st.dataframe(results_df[['text', 'sentimento', 'confianca']], height=400)
