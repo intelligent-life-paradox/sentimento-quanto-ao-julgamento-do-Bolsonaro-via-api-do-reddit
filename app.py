@@ -76,8 +76,8 @@ def get_reddit_posts(query, subreddit_name="brasil", limit=100):
                 if comment_time < one_week_ago:
                     continue
                 
-                # Ignora comentários que são apenas links
-                if not comment.body.strip().lower().startswith("http"):
+                # Ignora comentários que têm https em alguma parte do texto
+                if 'http' or '[removed]' not in comment.body.strip().lower():
                     content_list.append({
                         "text": comment.body,
                         "created_utc": comment.created_utc
@@ -97,9 +97,11 @@ def analyze_sentiment(df):
     """Aplica o modelo de análise de sentimento em cada texto do DataFrame."""
     if df is None:
         return None
+    
+    texts=[text[:512] for text in df["text"].tolist()]
 
-    # O pipeline processa a lista de textos
-    results = sentiment_analyzer(df["text"].tolist())
+    # modificação para ajeitar o problema de não processar textos com mais de 512 caracteres
+    results = sentiment_analyzer(texts)
 
     # rótulos do modelo s
     df['sentimento'] = [result['label'] for result in results]
