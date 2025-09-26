@@ -149,3 +149,4 @@ if st.button(f"Analisar Sentimento para '{selected_query}'"):
                 st.subheader("Amostra dos Dados")
                 # Mostra o texto, sentimento e a confiança do modelo
                 st.dataframe(results_df[['text', 'sentimento', 'confianca']], height=400)
+            st.balloons()
